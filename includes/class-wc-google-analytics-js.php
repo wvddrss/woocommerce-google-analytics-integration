@@ -137,7 +137,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 		if ( isset ($_COOKIE['affiliate_id'])) {
 			return "'" . esc_js( $_COOKIE['affiliate_id'] ) . "',";
 		} else {
-			return 'main';
+			return "'main',";
 		}
 	}
 
