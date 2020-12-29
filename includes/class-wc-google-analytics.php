@@ -28,6 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property $ga_enhanced_checkout_process_enabled
  * @property $ga_enhanced_product_detail_view_enabled
  * @property $ga_event_tracking_enabled
+ * @property $ga_affiliate_url_parameter
  */
 class WC_Google_Analytics extends WC_Integration {
 
@@ -120,6 +121,7 @@ class WC_Google_Analytics extends WC_Integration {
 			'ga_enhanced_checkout_process_enabled',
 			'ga_enhanced_product_detail_view_enabled',
 			'ga_event_tracking_enabled',
+			'ga_affiliate_url_parameter'
 		);
 
 		$constructor = array();
@@ -224,66 +226,73 @@ class WC_Google_Analytics extends WC_Integration {
 				'checkboxgroup'		=> '',
 				'default' 			=> 'yes',
 			),
-
+			
 			'ga_enhanced_ecommerce_tracking_enabled' => array(
 				'title'         => __( 'Enhanced eCommerce', 'woocommerce-google-analytics-integration' ),
 				'label'         => __( 'Enable Enhanced eCommerce ', 'woocommerce-google-analytics-integration' ),
 				'description'   => sprintf( __( 'Enhanced eCommerce allows you to measure more user interactions with your store, including: product impressions, product detail views, starting the checkout process, adding cart items, and removing cart items. Universal Analytics or Global Site Tag must be enabled for Enhanced eCommerce to work. If using Universal Analytics, turn on Enhanced eCommerce in your Google Analytics dashboard before enabling this setting. <a href="%s" target="_blank">See here for more information</a>.', 'woocommerce-google-analytics-integration' ), 'https://support.google.com/analytics/answer/6032539?hl=en' ),
-				'type'          => 'checkbox',
-				'checkboxgroup' => '',
-				'default'       => 'no',
-				'class'         => 'legacy-setting'
-			),
-
-			// Enhanced eCommerce Sub-Settings
-
-			'ga_enhanced_remove_from_cart_enabled' => array(
-				'label' 			=> __( 'Remove from Cart Events', 'woocommerce-google-analytics-integration' ),
-				'type' 				=> 'checkbox',
-				'checkboxgroup'		=> '',
-				'default' 			=> 'yes',
-				'class'             => 'enhanced-setting'
-			),
-
-			'ga_enhanced_product_impression_enabled' => array(
-				'label' 			=> __( 'Product Impressions from Listing Pages', 'woocommerce-google-analytics-integration' ),
-				'type' 				=> 'checkbox',
-				'checkboxgroup'		=> '',
-				'default' 			=> 'yes',
-				'class'             => 'enhanced-setting'
-			),
-
-			'ga_enhanced_product_click_enabled' => array(
-				'label' 			=> __( 'Product Clicks from Listing Pages', 'woocommerce-google-analytics-integration' ),
-				'type' 				=> 'checkbox',
-				'checkboxgroup'		=> '',
-				'default' 			=> 'yes',
-				'class'             => 'enhanced-setting'
-			),
-
-			'ga_enhanced_product_detail_view_enabled' => array(
-				'label' 			=> __( 'Product Detail Views', 'woocommerce-google-analytics-integration' ),
-				'type' 				=> 'checkbox',
-				'checkboxgroup'		=> '',
-				'default' 			=> 'yes',
-				'class'             => 'enhanced-setting'
-			),
-
-			'ga_enhanced_checkout_process_enabled' => array(
-				'label' 			=> __( 'Checkout Process Initiated', 'woocommerce-google-analytics-integration' ),
-				'type' 				=> 'checkbox',
-				'checkboxgroup'		=> '',
-				'default' 			=> 'yes',
-				'class'             => 'enhanced-setting'
-			),
-		);
-	}
-
-	/**
-	 * Shows some additional help text after saving the Google Analytics settings
-	 */
-	function show_options_info() {
-		$this->method_description .= "<div class='notice notice-info'><p>" . __( 'Please allow Google Analytics 24 hours to start displaying results.', 'woocommerce-google-analytics-integration' ) . "</p></div>";
+					'type'          => 'checkbox',
+					'checkboxgroup' => '',
+					'default'       => 'no',
+					'class'         => 'legacy-setting'
+				),
+				
+				// Enhanced eCommerce Sub-Settings
+				
+				'ga_enhanced_remove_from_cart_enabled' => array(
+					'label' 			=> __( 'Remove from Cart Events', 'woocommerce-google-analytics-integration' ),
+					'type' 				=> 'checkbox',
+					'checkboxgroup'		=> '',
+					'default' 			=> 'yes',
+					'class'             => 'enhanced-setting'
+				),
+				
+				'ga_enhanced_product_impression_enabled' => array(
+					'label' 			=> __( 'Product Impressions from Listing Pages', 'woocommerce-google-analytics-integration' ),
+					'type' 				=> 'checkbox',
+					'checkboxgroup'		=> '',
+					'default' 			=> 'yes',
+					'class'             => 'enhanced-setting'
+				),
+				
+				'ga_enhanced_product_click_enabled' => array(
+					'label' 			=> __( 'Product Clicks from Listing Pages', 'woocommerce-google-analytics-integration' ),
+					'type' 				=> 'checkbox',
+					'checkboxgroup'		=> '',
+					'default' 			=> 'yes',
+					'class'             => 'enhanced-setting'
+				),
+				
+				'ga_enhanced_product_detail_view_enabled' => array(
+					'label' 			=> __( 'Product Detail Views', 'woocommerce-google-analytics-integration' ),
+					'type' 				=> 'checkbox',
+					'checkboxgroup'		=> '',
+					'default' 			=> 'yes',
+					'class'             => 'enhanced-setting'
+				),
+				
+				'ga_enhanced_checkout_process_enabled' => array(
+					'label' 			=> __( 'Checkout Process Initiated', 'woocommerce-google-analytics-integration' ),
+					'type' 				=> 'checkbox',
+					'checkboxgroup'		=> '',
+					'default' 			=> 'yes',
+					'class'             => 'enhanced-setting'
+				),
+				'ga_affiliate_url_parameter' => array(
+					'title'				=> __('Affiliate url parameter'),
+					'label'				=> __('Url parameter of affiliate', 'woocommerce-google-analytics-integration'),
+					'description' => __('If you define a parameter here it will be session based stored and added to the google analytics enhanced commerce events'),
+					'type'				=> 'text',
+					'default'			=> get_option( 'woocommerce_ga_ecommerce_affiliate_url_parameter') ? get_option( 'woocommerce_ga_ecommerce_affiliate_url_parameter') : '',
+				),
+			);
+		}
+		
+		/**
+		 * Shows some additional help text after saving the Google Analytics settings
+		 */
+		function show_options_info() {
+			$this->method_description .= "<div class='notice notice-info'><p>" . __( 'Please allow Google Analytics 24 hours to start displaying results.', 'woocommerce-google-analytics-integration' ) . "</p></div>";
 
 		if ( isset( $_REQUEST['woocommerce_google_analytics_ga_ecommerce_tracking_enabled'] ) && true === (bool) $_REQUEST['woocommerce_google_analytics_ga_ecommerce_tracking_enabled'] ) {
 			$this->method_description .= "<div class='notice notice-info'><p>" . __( 'Please note, for transaction tracking to work properly, you will need to use a payment gateway that redirects the customer back to a WooCommerce order received/thank you page.', 'woocommerce-google-analytics-integration' ) . "</div>";
@@ -312,6 +321,7 @@ class WC_Google_Analytics extends WC_Integration {
 			'set_domain_name'                     => empty( $this->ga_set_domain_name ) ? 'no' : 'yes',
 			'plugin_version'                      => WC_GOOGLE_ANALYTICS_INTEGRATION_VERSION,
 			'enhanced_ecommerce_tracking_enabled' => $this->ga_enhanced_ecommerce_tracking_enabled,
+			'ga_affiliate_url_parameter'					=> $this->ga_affiliate_url_parameter,
 		);
 
 		// ID prefix, blank, or X for unknown
@@ -370,7 +380,6 @@ class WC_Google_Analytics extends WC_Integration {
 			$display_ecommerce_tracking = true;
 			echo $this->get_standard_tracking_code();
 		}
-
 		if ( ! $display_ecommerce_tracking && 'yes' === $this->ga_standard_tracking_enabled ) {
 			echo $this->get_standard_tracking_code();
 		}

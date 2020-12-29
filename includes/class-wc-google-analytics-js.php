@@ -122,11 +122,23 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 			" . self::tracker_var() . "( 'ec:addImpression', {
 				'id': '" . esc_js( $product->get_id() ) . "',
 				'name': '" . esc_js( $product->get_title() ) . "',
+				'affiliation': ". self::get_affiliate_id() . "
 				'category': " . self::product_get_category_line( $product ) . "
 				'list': '" . esc_js( $list ) . "',
 				'position': '" . esc_js( $position ) . "'
 			} );
 		" );
+	}
+
+	/**
+	 * Get affiliate id if set
+	 */
+	public static function get_affiliate_id() {
+		if ( isset ($_COOKIE['affiliate_id'])) {
+			return "'" . esc_js( $_COOKIE['affiliate_id'] ) . "',";
+		} else {
+			return 'main';
+		}
 	}
 
 	/**
@@ -151,6 +163,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 				" . self::tracker_var() . "( 'ec:addProduct', {
 					'id': '" . esc_js( $product->get_id() ) . "',
 					'name': '" . esc_js( $product->get_title() ) . "',
+					'affiliation': ". self::get_affiliate_id() . "
 					'category': " . self::product_get_category_line( $product ) . "
 					'position': '" . esc_js( $position ) . "'
 				});
@@ -185,6 +198,21 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 	public static function universal_analytics_footer() {
 		if ( apply_filters( 'wc_google_analytics_send_pageview', true ) ) {
 			wc_enqueue_js( "" . self::tracker_var() . "( 'send', 'pageview' ); " );
+			self::store_affiliate_id();
+		}
+	}
+
+	/**
+	 * Enqueues Javscript to store cookie with affiliate ID if provided
+	 */
+	public static function store_affiliate_id() {
+		if (null !== self::get( 'ga_affiliate_url_parameter')) {
+			if (isset($_GET[self::get( 'ga_affiliate_url_parameter')])) {
+				$affiliateId = $_GET[self::get( 'ga_affiliate_url_parameter')];
+				if(strlen($affiliateId) > 0) {
+					wc_enqueue_js("document.cookie = 'affiliate_id=" . $_GET[self::get( 'ga_affiliate_url_parameter')] . "; expires=". (time()+30*24*60*60) . "; path=/;'");
+				}
+			}
 		}
 	}
 
@@ -355,7 +383,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 
 		$code .= "" . self::tracker_var() . "( 'ec:setAction', 'purchase', {
 			'id': '" . esc_js( $order->get_order_number() ) . "',
-			'affiliation': '" . esc_js( get_bloginfo( 'name' ) ) . "',
+			'affiliation': ". self::get_affiliate_id() . "
 			'revenue': '" . esc_js( $order->get_total() ) . "',
 			'tax': '" . esc_js( $order->get_total_tax() ) . "',
 			'shipping': '" . esc_js( $order->get_total_shipping() ) . "'
@@ -401,6 +429,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 		$code .= "'id': '" . esc_js( $_product->get_sku() ? $_product->get_sku() : $_product->get_id() ) . "',";
 		$code .= "'name': '" . esc_js( $item['name'] ) . "',";
 		$code .= "'category': " . self::product_get_category_line( $_product );
+		$code .= "'affiliation': ". self::get_affiliate_id();
 
 		if ( '' !== $variant ) {
 			$code .= "'variant': " . $variant;
@@ -424,6 +453,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 					" . self::tracker_var() . "( 'ec:addProduct', {
 						'id': ($(this).data('product_sku')) ? ($(this).data('product_sku')) : ('#' + $(this).data('product_id')),
 						'quantity': $(this).parent().parent().find( '.qty' ).val() ? $(this).parent().parent().find( '.qty' ).val() : '1',
+						'affiliation': ". self::get_affiliate_id() ."
 					} );
 					" . self::tracker_var() . "( 'ec:setAction', 'remove' );
 					" . self::tracker_var() . "( 'send', 'event', 'UX', 'click', 'remove from cart' );
@@ -447,6 +477,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 			" . self::tracker_var() . "( 'ec:addProduct', {
 				'id': '" . esc_js( $product->get_sku() ? $product->get_sku() : ( '#' . $product->get_id() ) ) . "',
 				'name': '" . esc_js( $product->get_title() ) . "',
+				'affiliation': ". self::get_affiliate_id() . "
 				'category': " . self::product_get_category_line( $product ) . "
 				'price': '" . esc_js( $product->get_price() ) . "',
 			} );
@@ -468,6 +499,7 @@ class WC_Google_Analytics_JS extends WC_Abstract_Google_Analytics_JS {
 			$code .= "" . self::tracker_var() . "( 'ec:addProduct', {
 				'id': '" . esc_js( $product->get_sku() ? $product->get_sku() : ( '#' . $product->get_id() ) ) . "',
 				'name': '" . esc_js( $product->get_title() ) . "',
+				'affiliation': ". self::get_affiliate_id() . "
 				'category': " . self::product_get_category_line( $product );
 
 			if ( '' !== $variant ) {
